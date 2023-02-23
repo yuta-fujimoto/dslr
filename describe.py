@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 import argparse
-from pprint import pprint
 
 # exclude nan values
-
 
 def Count(df):
     counts = {}
@@ -17,7 +15,6 @@ def Count(df):
         counts[column_name] = count
 
     return counts
-
 
 def Mean(df):
     means = {}
@@ -32,20 +29,20 @@ def Mean(df):
 
     return means
 
-
+# unbiased variance => std
 def Std(df):
     stds = {}
 
     counts = Count(df)
     means = Mean(df)
     for column_name, item in df.iteritems():
-        variance = 0
+        variance = 0.
         for i in item:
             if not pd.isnull(i):
                 variance += (i - means[column_name]) ** 2
 
-        variance /= counts[column_name]
-        stds[column_name] = np.sqrt(variance)
+        variance /= (counts[column_name] - 1)
+        stds[column_name] = variance ** 0.5
 
     return stds
 
@@ -87,18 +84,28 @@ def extractFeatures(df):
 
     return features
 
-pd.options.display.max_colwidth = 30
 
-parser = argparse.ArgumentParser()
-parser.add_argument('filepath')
+if __name__ == '__main__':
+    # command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filepath')
+    args = parser.parse_args()
 
-df = pd.read_csv('datasets/dataset_train.csv')
+    # 
+    df = pd.read_csv(args.filepath)
+    df = df.select_dtypes(include=[np.number]).drop(columns=['Index'])
 
-df = df.select_dtypes(include=[np.number]).drop(columns=['Index'])
+    features = extractFeatures(df)
 
-features = extractFeatures(df)
+    # print dataframe for mutli lines
 
-print(features)
-# print(features.to_string())
-# debug
-pprint(df.describe())
+    max_columns = 4
+    col_space = 10
+    for i in range(len(features.columns) // max_columns):
+        features_print = features.iloc[:,i * max_columns:(i + 1) * max_columns]
+        print(features_print.to_string(float_format='{:.6f}'.format, col_space=col_space), end='\n\n')
+    else:
+        residue = (len(features.columns) % max_columns)
+        if not residue == 0:
+            features_print = features.iloc[:, -residue:]
+            print(features_print.to_string(float_format='{:.6f}'.format, col_space=col_space), end='\n\n')
