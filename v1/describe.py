@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 import argparse
-
-# exclude nan values
+import sys
 
 def Count(df):
     counts = {}
@@ -60,7 +59,7 @@ def Percentile(df, p):
 
     return percentiles
 
-
+# exclude nan values
 def extractFeatures(df):
     features = pd.DataFrame(columns=df.columns, index=[
         'Count',
@@ -91,9 +90,17 @@ if __name__ == '__main__':
     parser.add_argument('filepath')
     args = parser.parse_args()
 
-    # 
-    df = pd.read_csv(args.filepath)
-    df = df.select_dtypes(include=[np.number]).drop(columns=['Index'])
+    df = pd.DataFrame()
+    try:
+        df = pd.read_csv(args.filepath)
+    except FileNotFoundError:
+        print(f'No such file or directory: \'{args.filepath}\'', file=sys.stderr)
+        exit(1)
+
+    # exclude all nan columns(test csv)
+    drop_columns = df.columns[df.isnull().all().values].tolist()
+    drop_columns.append('Index')
+    df = df.select_dtypes(include=[np.number]).drop(columns=drop_columns)
 
     features = extractFeatures(df)
 
