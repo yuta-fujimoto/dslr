@@ -50,14 +50,14 @@ class LogisticRegression:
 
     def save(self, filename):
         save = np.array({
-            'mean': self.mean,
-            'std': self.std,
-            'weight': self.W,
+            'mean', self.mean,
+            "std", self.std,
+            "weight", self.W
         })
-        np.save(filename, save)
+        np.save(save, filename)
 
     def load(self, filename):
-        params = np.load(filename)
+        params = np.load(filename, allow_pickle=True).item()
         self.mean = params['mean']
         self.std = params['std']
         self.W = params['weight']
@@ -75,16 +75,17 @@ if __name__ == '__main__':
         print(f'No such file or directory: \'{args.filepath}\'', file=sys.stderr)
         exit(1)
 
-    df = df.dropna().drop(columns=['Index']).reset_index(drop=True)
-    print(df.columns)
-    train_x = df.select_dtypes(include=[np.number])
-
-    ohe_hogwarts_house = OneHotEncoder()
-    hogwarts_house = ohe_hogwarts_house.fit_transform(df[['Hogwarts House']]).toarray()
-    train_y = pd.DataFrame(hogwarts_house, columns=ohe_hogwarts_house.categories_)
+    df_index = df['Index']
+    df = df.drop(columns=['Index']).reset_index(drop=True)
+    valid = df.select_dtypes(include=[np.number])
+    valid = valid.drop(columns=['Hogwarts House'])
 
     model = LogisticRegression()
-    model.fit(train_x, train_y)
+    model.load('params.npy')
+    categories = np.load('categories.npy', allow_pickle=True)
 
-    model.save('params.npy')
-    np.save('categories', ohe_hogwarts_house.categories_[0])
+    preds_prob = model.predict(valid)
+    preds = preds_prob.argmax(1)
+
+    result = pd.DataFrame({'Index': df_index, 'Hogwarts House': [categories[p] for p in preds]})
+    result.to_csv('houses.csv', index=False)
