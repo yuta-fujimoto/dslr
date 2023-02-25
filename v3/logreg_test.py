@@ -11,33 +11,46 @@ class LogisticRegression:
         self.mean = 0
         self.std = 0.
 
-    def fit(self, x_df, y_df, learning_rate = 0.01, epoch = 10):
+    def fit(self, x_df, y_df, learning_rate = 0.01, epoch = 10, batch_size = None):
         x = x_df.values
+        y = y_df.values
+
+        n_features = x.shape[1]
+        n_samples = x.shape[0]
+        n_labels = y.shape[1]
 
         # normalize to optimize learning and prevent overflow 
         self.mean = x_df.mean().values
         self.std = x_df.std().values
         x = (x - self.mean) / self.std
-        
         # concatenate bias
-        x = np.concatenate([x, np.ones((x.shape[0], 1))], 1)
-        y = y_df.values
+        x = np.concatenate([x, np.ones((n_samples, 1))], 1)
 
-        self.W = np.zeros((x.shape[1], y.shape[1]))
+        # Batch GD
+        if batch_size == None:
+            split = 1
+        else: # mini-batch GD or stochastic GD
+            split = n_samples // batch_size
 
-        size = x.shape[0]
+        self.W = np.zeros((n_features + 1, n_labels))
+
         for i in range(epoch):
-            activation = 1. / (1. + np.exp(-1. * np.matmul(self.W.T, x.T)))
+            batch_size = 0
+            loss = np.zeros(n_labels)
+            correct = 0
+            for x_batch, y_batch in zip(np.array_split(x, split, 0), np.array_split(y, split, 0)):
+                activation = 1. / (1. + np.exp(-1. * np.matmul(self.W.T, x_batch.T)))
 
-            loss = -np.diag(np.matmul(y.T, np.log(activation.T)) + np.matmul(1 - y.T, np.log(1 - activation.T)))
-            loss = loss / size
+                loss_batch = -np.diag(np.matmul(y_batch.T, np.log(activation.T)) +
+                                 np.matmul(1 - y_batch.T, np.log(1 - activation.T)))
+                loss += loss_batch / n_samples
 
-            grad = np.matmul((activation - y.T), x) / size
+                grad = np.matmul((activation - y_batch.T), x_batch) / n_samples
 
-            self.W = self.W - grad.T * learning_rate
+                self.W = self.W - grad.T * learning_rate
 
-            correct = (activation.T.argmax(1) == y.argmax(1)).sum()
-            print(f'epoch {i + 1}:\n loss: {loss} acc: {correct / size:.5}')
+                correct += (activation.T.argmax(1) == y_batch.argmax(1)).sum()
+            print(f'epoch {i + 1}:\n loss: {loss} acc: {correct / n_samples:.5}')
 
     def predict(self, x_df):
         x = x_df.values
@@ -50,11 +63,11 @@ class LogisticRegression:
 
     def save(self, filename):
         save = np.array({
-            'mean', self.mean,
-            "std", self.std,
-            "weight", self.W
+            'mean': self.mean,
+            "std": self.std,
+            "weight": self.W
         })
-        np.save(save, filename)
+        np.save(filename, save)
 
     def load(self, filename):
         params = np.load(filename, allow_pickle=True).item()
@@ -76,6 +89,7 @@ if __name__ == '__main__':
         exit(1)
 
     df_index = df['Index']
+    # there is no nan value
     df = df.drop(columns=['Index']).reset_index(drop=True)
     valid = df.select_dtypes(include=[np.number])
     valid = valid.drop(columns=['Hogwarts House'])
