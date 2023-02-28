@@ -2,3 +2,5 @@
 *.npy
 .gitignore
 *.csv
+
+v3/logreg_train_pytorch.py

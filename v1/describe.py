@@ -45,7 +45,6 @@ def Std(df):
 
     return stds
 
-
 def Percentile(df, p):
     percentiles = {}
 
@@ -59,6 +58,23 @@ def Percentile(df, p):
 
     return percentiles
 
+# https://bellcurve.jp/statistics/course/17950.html
+def Skewness(df):
+    skewnesses = {}
+    stds = Std(df)
+    means = Mean(df)
+    counts = Count(df)
+
+    for column_name, item in df.iteritems():
+        three_dim_moment = 0.
+
+        for i in item:
+            if not pd.isnull(i):
+                three_dim_moment += ((i - means[column_name]) / stds[column_name]) ** 3
+            skewnesses[column_name] = three_dim_moment * counts[column_name] / ((counts[column_name] - 1) * (counts[column_name] - 2))
+
+    return skewnesses
+
 # exclude nan values
 def extractFeatures(df):
     features = pd.DataFrame(columns=df.columns, index=[
@@ -69,7 +85,8 @@ def extractFeatures(df):
         '25%',
         '50%',
         '75%',
-        'Max'
+        'Max',
+        'Skewness',
     ])
 
     features.loc['Count'] = Count(df)
@@ -80,6 +97,7 @@ def extractFeatures(df):
     features.loc['50%'] = Percentile(df, 0.5)
     features.loc['75%'] = Percentile(df, 0.75)
     features.loc['Max'] = Percentile(df, 1.)
+    features.loc['Skewness'] = Skewness(df)
 
     return features
 
