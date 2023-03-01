@@ -1,4 +1,4 @@
-# great work!!!!
+これは別に意味ないので気にしないでください。。。
 
 import torch
 from torch import nn
