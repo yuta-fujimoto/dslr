@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 
@@ -16,6 +15,7 @@ class LogisticRegression:
             'Ancient Runes',
             'Transfiguration',
             'Charms',
+            'History of Magic',
         ]
 
     def fit(self, x_df, y_df, learning_rate=0.001, epoch=10, batch_size=None):
