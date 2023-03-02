@@ -6,7 +6,7 @@ import sys
 def Count(df):
     counts = {}
 
-    for column_name, item in df.iteritems():
+    for column_name, item in df.items():
         count = 0
         for i in item:
             if not pd.isnull(i):
@@ -19,7 +19,7 @@ def Mean(df):
     means = {}
 
     counts = Count(df)
-    for column_name, item in df.iteritems():
+    for column_name, item in df.items():
         sum = 0
         for i in item:
             if not pd.isnull(i):
@@ -34,7 +34,7 @@ def Std(df):
 
     counts = Count(df)
     means = Mean(df)
-    for column_name, item in df.iteritems():
+    for column_name, item in df.items():
         variance = 0.
         for i in item:
             if not pd.isnull(i):
@@ -49,7 +49,7 @@ def Percentile(df, p):
     percentiles = {}
 
     counts = Count(df)
-    for column_name, item in df.iteritems():
+    for column_name, item in df.items():
         sorted_item = item.sort_values().reset_index(drop=True)
         take = (counts[column_name] - 1) * p
         # linear interpolation
@@ -65,7 +65,7 @@ def Skewness(df):
     means = Mean(df)
     counts = Count(df)
 
-    for column_name, item in df.iteritems():
+    for column_name, item in df.items():
         three_dim_moment = 0.
 
         for i in item:

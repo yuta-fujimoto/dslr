@@ -47,7 +47,7 @@ class LogisticRegression:
 
         for i in range(epoch):
             train_x, valid_x, train_y, valid_y = train_test_split(
-                x, y, test_size=0.2, random_state=42, shuffle=True)
+                x, y, test_size=0.2, shuffle=True)
             log = {}
 
             # train
