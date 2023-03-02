@@ -6,6 +6,8 @@ from sklearn.preprocessing import OneHotEncoder
 import logreg
 
 if __name__ == '__main__':
+    np.random.seed(43)
+
     # command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', default='datasets/dataset_train.csv')
