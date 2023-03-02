@@ -49,8 +49,7 @@ class LogisticRegression:
             train_x, valid_x, train_y, valid_y = train_test_split(
                 x, y, test_size=0.2, shuffle=True)
             log = {}
-            if i <= 5:
-                print(train_x)
+
             # train
             correct = 0
             loss = np.zeros(n_labels)
