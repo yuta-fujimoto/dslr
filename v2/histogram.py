@@ -40,5 +40,5 @@ if __name__ == '__main__':
 
     fig.legend(labels=labels, loc='lower right')
     plt.tight_layout()
-    plt.savefig('histgram.png')
+    plt.savefig('histogram.png')
     # plt.show()
